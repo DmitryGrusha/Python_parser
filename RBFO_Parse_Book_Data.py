@@ -3,7 +3,8 @@ import os
 import re
 import json
 from bs4 import BeautifulSoup
-from ID_Generator import generate_id
+# from ID_Generator import *
+import ID_Generator
 
 from Genre import get_array_of_ids_by_name, Genre
 
@@ -12,16 +13,18 @@ image_base_url = "https://readbookfreeonline.com/"
 file_format = ".txt"
 json_file_format = ".json"
 image_format = ".jpg"
-files_directory = "English_Books"
+# files_directory = "English_Books"
 images_directory = "Img"
 page_path_component = "/page-"
+books_path = "Books/"
 
 
-def parse_by(url: str):
+def parse_by(url: str, category: str):
     response = requests.get(url)
     if response.status_code == 200:
         soup = BeautifulSoup(response.text, 'lxml')
-        book_id = generate_id()
+        # book_id = generate_id()
+        book_id = ID_Generator.create_new_id()
         print("Parse book info:")
         # author information
         author_result, author_name = get_author_name(soup)
@@ -42,7 +45,9 @@ def parse_by(url: str):
         load_image_result = get_and_load_image(soup, book_id)
         if load_image_result is False: return False
         # create txt file
-        book_path = create_json_file(book_id=book_id, author_name=author_name, book_title=book_title, storyline=storyline, chapters_total_count=book_pages_count, genres=genres)
+        book_path = create_json_file(category=category, book_id=book_id, author_name=author_name, book_title=book_title, storyline=storyline, chapters_total_count=book_pages_count, genres=genres)
+        # save new id to file
+        ID_Generator.save_new_id(new_id=book_id)
         print("❕ Book parsing has started - " + book_title)
         # return parse_all_pages(url=url, max_pages=book_pages_count, book_path=book_path)
         parse_book_result = parse_all_pages(url=url, max_pages=book_pages_count, book_path=book_path)
@@ -69,9 +74,9 @@ def parse_all_pages(url: str, max_pages: int, book_path):
         current_page += 1
 
 
-def create_json_file(book_id: int, author_name: str, book_title: str,storyline: str, chapters_total_count: int, genres):
+def create_json_file(category: str, book_id: int, author_name: str, book_title: str,storyline: str, chapters_total_count: int, genres):
     file_path = str(book_id) + json_file_format
-    book_folder_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), files_directory)
+    book_folder_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), books_path + category)
     # create directory if not exist
     if not os.path.exists(book_folder_path):
         os.makedirs(book_folder_path)
@@ -117,7 +122,11 @@ def get_and_load_image(soup, book_id: int) -> bool:
         get_book_image_request = requests.get(image_url)
 
         img_data = get_book_image_request.content
-        image_folder_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), images_directory)
+        image_folder_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), books_path + images_directory)
+        # Create dir if not exist
+        if not os.path.exists(image_folder_path):
+            os.makedirs(image_folder_path)
+
         image_path = os.path.join(image_folder_path, str(book_id) + image_format)
 
         with open(image_path, 'wb') as file:

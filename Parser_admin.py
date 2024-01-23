@@ -27,7 +27,7 @@ def lets_go(category):
         for link in data:
             url = "https://readbookfreeonline.com" + link
             if is_already_exists(url) is False:
-                parse_book_result = parse_by(url)
+                parse_book_result = parse_by(url, category=category)
                 if parse_book_result:
                     save_url_to_already_parsed(url)
                     book_url_saved += 1
