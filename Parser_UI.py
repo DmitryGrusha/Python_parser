@@ -1,18 +1,21 @@
 import tkinter as tk
 from tkinter import scrolledtext, messagebox
 import sys
+
+import Parser_admin
 from Parser_admin import *
 import threading
 
 
-progress = "Progress"
+# progress = "Progress"
+already_parsed_text = "Already parsed in this category - "
 
 def redirect_stdout_to_text_widget():
 
     class WriteToTextWidget:
         def write(self, s):
 
-            if progress in s:
+            if already_parsed_text in s:
                 update_status(s)
             add_log(s)
 
@@ -29,9 +32,10 @@ def lets_go_background(category):
 def on_stop_button_click():
     result = messagebox.askquestion("Confirmation", "Do you really want to stop parsing?")
     if result == 'yes':
-        add_log("Parsing stopped.")
-    else:
-        add_log("Parsing continued.")
+        Parser_admin.stop = True
+    #     # add_log("Parsing stopped.")
+    # else:
+    #     add_log("Parsing continued.")
 
 def add_log(message):
     log_text.config(state=tk.NORMAL)
@@ -76,7 +80,7 @@ for i, cat in enumerate(categories):
 stop_button = tk.Button(root, text="STOP", width=button_width, height=button_height, command=on_stop_button_click)
 stop_button.pack(side=tk.RIGHT, padx=10, pady=10)
 
-status_label = tk.Label(root, text=progress, fg="white")
+status_label = tk.Label(root, text=already_parsed_text, fg="white")
 status_label.pack(side=tk.LEFT, padx=10, pady=5)
 
 root.resizable(width=False, height=False)
