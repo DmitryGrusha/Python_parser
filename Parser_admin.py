@@ -3,7 +3,7 @@ import Parser_admin
 already_parsed_file_path = "already_parsed" + ".txt"
 split_char = "|"
 books_path = "Books/"
-import os
+images_directory = "Img"
 
 def save_url_to_already_parsed(url, category):
     book_folder_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), books_path + category)
@@ -61,7 +61,8 @@ def lets_go(category):
             how_much_is_already_exists(data, category=category)
             url = "https://readbookfreeonline.com" + link
             if is_already_exists(url, category=category) is False:
-                parse_book_result = parse_by(url, category=category)
+                book_id = ID_Generator.create_new_id()
+                parse_book_result = parse_by(url, category=category, book_id=book_id)
                 if parse_book_result:
                     save_url_to_already_parsed(url, category=category)
                     book_url_saved += 1

@@ -3,7 +3,6 @@ import os
 import re
 import json
 from bs4 import BeautifulSoup
-# from ID_Generator import *
 import ID_Generator
 
 from Genre import get_array_of_ids_by_name, Genre
@@ -13,18 +12,14 @@ image_base_url = "https://readbookfreeonline.com/"
 file_format = ".txt"
 json_file_format = ".json"
 image_format = ".jpg"
-# files_directory = "English_Books"
 images_directory = "Img"
 page_path_component = "/page-"
 books_path = "Books/"
 
-
-def parse_by(url: str, category: str):
+def parse_by(url: str, category: str, book_id: int):
     response = requests.get(url)
     if response.status_code == 200:
         soup = BeautifulSoup(response.text, 'lxml')
-        # book_id = generate_id()
-        book_id = ID_Generator.create_new_id()
         print("Parse book info:")
         # author information
         author_result, author_name = get_author_name(soup)
@@ -49,11 +44,12 @@ def parse_by(url: str, category: str):
         # save new id to file
         ID_Generator.save_new_id(new_id=book_id)
         print("❕ Book parsing has started - " + book_title)
-        # return parse_all_pages(url=url, max_pages=book_pages_count, book_path=book_path)
         parse_book_result = parse_all_pages(url=url, max_pages=book_pages_count, book_path=book_path)
         if parse_book_result:
             print("✅ - " + book_title)
             return True
+        else:
+            return False
     else:
         print("🔴 Book page request.")
         return False
@@ -95,24 +91,6 @@ def create_json_file(category: str, book_id: int, author_name: str, book_title: 
         json.dump(data, json_file, ensure_ascii=False, indent=2)
         print("🟢 Json file.")
         return book_path
-
-
-# CREATE FILE FOR ALL DATA
-# def create_file(book_id: int, author_name: str, book_title: str,storyline: str, genres: [int]):
-#     file_path = str(book_id) + file_format
-#     book_folder_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), files_directory)
-#     # create directory if not exist
-#     if not os.path.exists(book_folder_path):
-#         os.makedirs(book_folder_path)
-#
-#     book_path = os.path.join(book_folder_path, file_path)
-#     author_and_book_title = author_name + '\n' + book_title + '\n'
-#
-#     with open(book_path, "w", encoding="utf-8") as file:
-#         file.write(author_and_book_title)
-#         print("FILE CREATED - SUCCESS")
-#         return book_path
-
 
 # LOAD IMAGE TO DIRECTORY
 def get_and_load_image(soup, book_id: int) -> bool:
@@ -211,33 +189,9 @@ def get_book_pages_count(soup) -> (bool, int):
         print("🔴 Number of chapters.")
         return False, 0
 
-
-# PARSE ALL PARAGRAPHS ON 1 PAGE
-# def get_text_from_page(url: str, book_path, page: int):
-#     response = requests.get(url)
-#     if response.status_code == 200:
-#         print("REQUEST TO PAGE " + url + " - SUCCESS")
-#         soup = BeautifulSoup(response.text, 'lxml')
-#         paragraphs = soup.find_all('p')
-#         if paragraphs:
-#             for p in paragraphs:
-#                 with open(book_path, 'a', encoding='utf-8') as file:
-#                     file.write("\n" + "\n" + p.getText())
-#
-#             print("APPEND TEXT FINISHED - PAGE - " + str(page))
-#             return True
-#         else:
-#             print("PARAGRAPHS - ERROR")
-#             return False
-#     else:
-#         print("REQUEST TO PAGE " + url + " - ERROR")
-#         return False
-
-
 def get_text_from_page_and_save_to_json(url: str, book_path, page: int, max_pages: int):
     response = requests.get(url)
     if response.status_code == 200:
-        # print("REQUEST TO PAGE " + url + " - SUCCESS")
         soup = BeautifulSoup(response.text, 'lxml')
         paragraphs = soup.find_all('p')
         if paragraphs:
@@ -249,13 +203,9 @@ def get_text_from_page_and_save_to_json(url: str, book_path, page: int, max_page
                 data = "\n\n" + p.getText()
                 full_chapter += data
 
-            # print("FULL_CHAPTER - " + full_chapter)
             existing_data["chapters"].append(full_chapter)
-            # existing_data["chapters"].append({"text": full_chapter})
             with open(book_path, 'w', encoding='utf-8') as json_file:
                 json.dump(existing_data, json_file, ensure_ascii=False, indent=2)
-
-            # print("APPEND TEXT FINISHED - PAGE - " + str(page))
             return True
         else:
             if page < max_pages:

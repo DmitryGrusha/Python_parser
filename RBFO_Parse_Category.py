@@ -12,7 +12,6 @@ def parse_all_books_links_in(category: str):
     # find max pages count in category
     max_pages_result, max_pages = find_category_pages_count(url)
     if max_pages_result is False: return False, []
-    # print(url + " pages - " + str(max_pages))
     print("Category - " + category)
     print("Pages - " + str(max_pages))
     # parser all pages and take urls for book parsing
